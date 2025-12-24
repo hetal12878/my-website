@@ -68,6 +68,46 @@ document.addEventListener('DOMContentLoaded',()=>{
     t._hide = setTimeout(()=>{t.classList.remove('show')},timeout);
   }
 
+  // --- Shop modal: show centered modal when clicking shop link ---
+  (function shopModal(){
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const shopAnchors = Array.from(document.querySelectorAll('a[href$="shop.html"]'));
+    if(shopAnchors.length === 0) return;
+
+    // create modal markup if missing
+    let modal = document.getElementById('shop-modal');
+    if(!modal){
+      modal = document.createElement('div');
+      modal.id = 'shop-modal';
+      modal.className = 'shop-modal';
+      modal.innerHTML = '<div class="shop-modal-backdrop"></div><div class="shop-modal-panel" role="dialog" aria-modal="true"><button class="shop-modal-close" aria-label="Đóng">×</button><div class="shop-modal-content" aria-live="polite"></div></div>';
+      document.body.appendChild(modal);
+      modal.querySelector('.shop-modal-close').addEventListener('click',()=>{ modal.classList.remove('open'); modal.querySelector('.shop-modal-content').innerHTML=''; });
+      modal.querySelector('.shop-modal-backdrop').addEventListener('click',()=>{ modal.classList.remove('open'); modal.querySelector('.shop-modal-content').innerHTML=''; });
+    }
+
+    const openModal = html=>{
+      const content = modal.querySelector('.shop-modal-content');
+      content.innerHTML = html;
+      modal.classList.add('open');
+    };
+
+    shopAnchors.forEach(a=>{
+      // ensure original text remains unchanged
+      if(!a.dataset.originalText) a.dataset.originalText = a.textContent.trim();
+      a.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        if(isAdmin){
+          // admin: load shop page into an iframe inside modal
+          openModal('<iframe class="shop-iframe" src="shop.html" frameborder="0" />');
+        } else {
+          // non-admin: show coming soon message centered
+          openModal('<div style="padding:1rem 1.2rem; text-align:center;"><h3>Coming soon</h3><p>Cửa hàng hiện chưa mở — hãy theo dõi để biết thông tin mới nhất.</p></div>');
+        }
+      });
+    });
+  })();
+
   // contact form handling: prevent mailto navigation and show demo toast
   const contactForm = document.getElementById('contact-form');
   if(contactForm){
@@ -81,6 +121,35 @@ document.addEventListener('DOMContentLoaded',()=>{
       contactForm.reset();
     })
   }
+
+    // --- Admin nav link: only show if localStorage.isAdmin === 'true' ---
+    (function adminNav(){
+      try{
+        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+        const nav = document.querySelector('.nav');
+        const mobileNav = document.getElementById('mobile-nav');
+        if(!nav) return;
+        const existing = nav.querySelector('a.admin-link');
+        if(isAdmin){
+          if(!existing){
+            const a = document.createElement('a');
+            a.href = 'admin.html';
+            a.textContent = 'Admin';
+            a.className = 'admin-link';
+            nav.appendChild(a);
+            if(mobileNav){
+              const clone = a.cloneNode(true);
+              mobileNav.appendChild(clone);
+            }
+          }
+        }else{
+          if(existing) existing.remove();
+          if(mobileNav){
+            const m = mobileNav.querySelector('a.admin-link'); if(m) m.remove();
+          }
+        }
+      }catch(e){/* ignore */}
+    })();
   
   
   // --- Page transition animation (load + internal link navigation) ---

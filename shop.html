@@ -59,6 +59,17 @@
     </section>
   </main>
 
+  <!-- Locked overlay: shown to non-admins to block direct access -->
+  <div id="locked-overlay" class="locked-overlay" role="dialog" aria-modal="true">
+    <div class="locked-panel">
+      <h2>Coming soon</h2>
+      <p>Chuẩn bị mở cửa, xin cảm ơn.</p>
+      <div class="actions">
+        <a class="btn" href="index.html">Quay lại</a>
+      </div>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>© 2025 AuraTown — Tất cả quyền được bảo lưu.</div>
@@ -69,6 +80,23 @@
     </div>
   </footer>
 
+  <script>
+    // Prevent non-admins from seeing shop page content.
+    document.addEventListener('DOMContentLoaded', function(){
+      try{
+        var isAdmin = localStorage.getItem('isAdmin') === 'true';
+      }catch(e){ var isAdmin = false }
+      var overlay = document.getElementById('locked-overlay');
+      if(!isAdmin){
+        if(overlay) overlay.style.display = 'flex';
+        // optionally scroll to top
+        window.scrollTo(0,0);
+      } else {
+        if(overlay) overlay.style.display = 'none';
+      }
+      // admin-help removed: no client-side instruction button shown
+    });
+  </script>
   <script src="js/main.js"></script>
 </body>
 </html>
